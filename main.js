@@ -29,16 +29,19 @@ function loadFromSorage() {
         li.appendChild(document.createTextNode(" "));
 
         var del_btn = document.createElement('button');
-        del_btn.className = 'btn btn-secondary btn-sm float-end mr-1 delete';
+        del_btn.className = 'btn btn-danger btn-sm float-right delete margin-auto';
         del_btn.appendChild(document.createTextNode('Delete Expense'));
 
 
         var edit_btn = document.createElement('button');
-        edit_btn.className = 'btn btn-secondary btn-sm float-end mr-1 edit';
+        edit_btn.className = 'btn btn-secondary btn-sm float-right mr-2 edit';
         edit_btn.appendChild(document.createTextNode('Edit Expense'));
 
         li.appendChild(del_btn);
         li.appendChild(edit_btn);
+
+        li.style.padding = "2px";
+        li.style.margin = "5px";
 
         ul.appendChild(li);
     }
@@ -68,26 +71,28 @@ function onSubmit(e) {
         li.appendChild(document.createTextNode(category.value));
 
         var del_btn = document.createElement('button');
-        del_btn.className = 'btn float-right delete';
+        del_btn.className = 'btn btn-danger btn-sm float-right delete margin-auto';
         del_btn.appendChild(document.createTextNode('Delete Expense'));
 
 
         var edit_btn = document.createElement('button');
-        edit_btn.className = 'btn  mr-1 float-right edit';
+        edit_btn.className = 'btn btn-secondary btn-sm float-right mr-2 edit';
         edit_btn.appendChild(document.createTextNode('Edit Expense'));
 
         li.appendChild(del_btn);
         li.appendChild(edit_btn);
 
+        li.style.padding = "2px";
+        li.style.margin = "5px";
 
-       
-        ul.appendChild(li);
 
         var expenseObj = [amount.value, desc.value];
 
         localStorage.setItem(desc.value,JSON.stringify(expenseObj) );
 
         form.reset();
+
+        ul.appendChild(li);
     }
 }
 
