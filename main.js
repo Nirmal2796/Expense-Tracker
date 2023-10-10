@@ -86,7 +86,7 @@ function onSubmit(e) {
         li.style.margin = "5px";
 
 
-        var expenseObj = [amount.value, desc.value];
+        var expenseObj = [amount.value, category.value];
 
         localStorage.setItem(desc.value,JSON.stringify(expenseObj) );
 
