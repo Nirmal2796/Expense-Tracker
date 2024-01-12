@@ -1,55 +1,37 @@
 const amount = document.getElementById('amount');
 const desc = document.getElementById('desc');
 const category = document.getElementById('category');
+const eid=document.getElementById('id');
 
 const form = document.getElementById('form');
 const ul = document.getElementById('expense-list');
 
-
+const edit=document.getElementById('edit');
 
 form.addEventListener('submit', onSubmit);
-ul.addEventListener('click', removeUser);
-ul.addEventListener('click', editUser);
+// ul.addEventListener('click', removeUser);
+// ul.addEventListener('click', editUser);
 
-document.addEventListener('DOMContentLoaded', loadFromSorage);
+edit.addEventListener('click',onSubmit);
 
-function loadFromSorage() {
-    
+document.addEventListener('DOMContentLoaded', DomLoad);
 
-    for (var i = 0; i < localStorage.length; i++){
-        var li = document.createElement("li");
-        var key = localStorage.key(i);
-        var arr = JSON.parse(localStorage.getItem(key));
-
-        li.appendChild(document.createTextNode(arr[0]));
-        li.appendChild(document.createTextNode(" "));
-        li.appendChild(document.createTextNode(key));
-        li.appendChild(document.createTextNode(" "));
-        li.appendChild(document.createTextNode(arr[1]));
-        li.appendChild(document.createTextNode(" "));
-
-        var del_btn = document.createElement('button');
-        del_btn.className = 'btn btn-danger btn-sm float-right delete margin-auto';
-        del_btn.appendChild(document.createTextNode('Delete Expense'));
-
-
-        var edit_btn = document.createElement('button');
-        edit_btn.className = 'btn btn-secondary btn-sm float-right mr-2 edit';
-        edit_btn.appendChild(document.createTextNode('Edit Expense'));
-
-        li.appendChild(del_btn);
-        li.appendChild(edit_btn);
-
-        li.style.padding = "2px";
-        li.style.margin = "5px";
-
-        ul.appendChild(li);
-    }
-
+async function DomLoad() {
+    try{
+        const res = await axios.get("http://localhost:3000/")
+        
+            for (let i in res.data) {
+                showOnScreen(res.data[i]);
+           }
+            
+        }
+        catch(err){
+        console.log(err)
+        }
 
 }
 
-function onSubmit(e) {
+async function onSubmit(e) {
     e.preventDefault();
 
     if (amount.value == '' || desc.value == '') {
@@ -60,77 +42,101 @@ function onSubmit(e) {
         }, 2000);
     } 
     else {
+        if(e =='submit'){
+            try{
+                expense={
+                    amount:amount.value,
+                    description:desc.value,
+                    category:category.value
+                };
+                let response= await axios.post("http://localhost:3000/add-expense/",expense);
+                showOnScreen(response.data.expense);
+            }
+            catch(err){
+                console.log(err);
+            }
+            
+            form.reset();
+        }
+
+        else{
+            try{
+                expense={
+                    id:id.value,
+                    amount:amount.value,
+                    description:desc.value,
+                    category:category.value
+                };
+
+                console.log(expense);
+                let response= await axios.post("http://localhost:3000/edit-expense/",expense);
+                showOnScreen(response.data.expense);
+            }
+            catch(err){
+                console.log(err);
+            }
+            
+            form.reset();
+    
+        }
+    }
+
+}
+
+
+function removeExpense(id) {
+    try{
+
+        axios.delete(`http://localhost:3000/delete/${id}`);
+        ul.removeChild(document.getElementById(id));
+                            
+     
+    }
+    catch(err){
+        console.log(err);
+    }
+
+    
+
+}
+
+async function editExpense(id) {
+    try{
+        const expense=await axios.get(`http://localhost:3000/edit/${id}`);
+        const editExpense=expense.data.expense;
+
+       eid.value=id;
+       amount.value=editExpense.amount;   
+       desc.value=editExpense.description;
+       category.value=editExpense.category;
 
        
-        var li = document.createElement("li");
+        
+       let submit=document.getElementById('submit');
+       submit.setAttribute('hidden','true');
+       
+       edit.removeAttribute('hidden');
+    
+       ul.removeChild(document.getElementById(id));
+      
 
-        li.appendChild(document.createTextNode(amount.value));
-        li.appendChild(document.createTextNode(" "));
-        li.appendChild(document.createTextNode(desc.value));
-        li.appendChild(document.createTextNode(" "));
-        li.appendChild(document.createTextNode(category.value));
-
-        var del_btn = document.createElement('button');
-        del_btn.className = 'btn btn-danger btn-sm float-right delete margin-auto';
-        del_btn.appendChild(document.createTextNode('Delete Expense'));
-
-
-        var edit_btn = document.createElement('button');
-        edit_btn.className = 'btn btn-secondary btn-sm float-right mr-2 edit';
-        edit_btn.appendChild(document.createTextNode('Edit Expense'));
-
-        li.appendChild(del_btn);
-        li.appendChild(edit_btn);
-
-        li.style.padding = "2px";
-        li.style.margin = "5px";
-
-
-        var expenseObj = [amount.value, category.value];
-
-        localStorage.setItem(desc.value,JSON.stringify(expenseObj) );
-
-        form.reset();
-
-        ul.appendChild(li);
+    }
+    catch(err){
+        console.log(err);
     }
 }
 
 
-function removeUser(e) {
+function showOnScreen(obj){
 
-    if (e.target.classList.contains('delete')) {
+    // const parent=document.getElementById()
+    const child=`<li id=${obj.id}> 
+    ${obj.category} - ${obj.amount} - ${obj.description}
+    <button class='btn btn-danger btn-sm float-right margin-auto' onClick=removeExpense(${obj.id})>Delete</button>
+    <button class='btn btn-secondary btn-sm float-right mr-2 ' onClick=editExpense(${obj.id})>Edit</button>  
+    </li>`
 
-        var li = e.target.parentElement;
-        var desc_key = li.childNodes[2].textContent;
-
-
-        localStorage.removeItem(desc_key);
-
-        ul.removeChild(li);
-
-    }
-
-}
-
-function editUser(e) {
-    if (e.target.classList.contains('edit')) {
-
-        var li = e.target.parentElement;
-        var desc_key = li.childNodes[2].textContent;
-
-        var desc_arr = JSON.parse(localStorage.getItem(desc_key));
-
-  
-        amount.value = desc_arr[0];
-        desc.value = desc_key;
-        category.value = desc_arr[1];
+    ul.innerHTML=ul.innerHTML+child;
 
 
-         localStorage.removeItem(desc_key);
-         ul.removeChild(li);
-
-
-
-    }
 }
